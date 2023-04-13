@@ -78,6 +78,7 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
+        Sysqtem.out.println("Сессия очистки таблицы");
         Session session = sessionFactory.getCurrentSession();
        try{
            session.beginTransaction();
