@@ -1,18 +1,24 @@
 package jm.task.core.jdbc.util;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
-import javax.sql.DataSource;
+public final class Util {
+    private static final String PASSWORD = "root";
+    private static final String USER = "root";
+    private static final String URL = "jdbc:mysql://localhost:3306/new_test";
 
-public class Util {
+    private Util() {
+    }
 
-    private Util() {}
+    public static Connection open() {
+        try {
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-    public static DataSource connectionMySql() {
-        DataSource dataSource = new DriverManagerDataSource("jdbc:mysql://localhost:3306/new_test",
-                "root","root");
-        return dataSource;
     }
     // реализуйте настройку соеденения с БД
 }

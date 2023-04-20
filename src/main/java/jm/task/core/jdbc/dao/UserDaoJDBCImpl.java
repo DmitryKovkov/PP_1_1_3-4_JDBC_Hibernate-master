@@ -1,10 +1,10 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
@@ -31,41 +31,82 @@ public class UserDaoJDBCImpl implements UserDao {
             "last_name varchar(20)," +
             "age tinyint unsigned )";
 
-    private static final RowMapper<User> userRowMapper = (rs, rowNum) -> {
-        Long id = rs.getLong("id");
-        String firstname = rs.getString("first_name");
-        String lastname = rs.getString("last_name");
-        byte age = rs.getByte("age");
-        return new User(id, firstname, lastname, age);
-    };
 
-    private JdbcTemplate jdbcTemplate;
+    //   private Jdbc;
+    private Statement statement;
+    private PreparedStatement preparedStatement;
+    private ResultSet resultSet;
+    private Connection connection;
 
-    public UserDaoJDBCImpl(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    public UserDaoJDBCImpl(Connection connection) {
+        //this.jdbcTemplate = new JdbcTemplate(dataSource);
+       this.connection = connection;
     }
 
     public void createUsersTable() {
-        jdbcTemplate.update(SQL_CREATE);
+        try {
+            preparedStatement = connection.prepareStatement(SQL_CREATE);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //  jdbcTemplate.update(SQL_CREATE);
     }
 
     public void dropUsersTable() {
-        jdbcTemplate.update(SQL_DROP);
+        try {
+            preparedStatement = connection.prepareStatement(SQL_DROP);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //  jdbcTemplate.update(SQL_DROP);
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        jdbcTemplate.update(SQL_INSERT, name, lastName, age);
+        try {
+            preparedStatement = connection.prepareStatement(SQL_INSERT);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // jdbcTemplate.update(SQL_INSERT, name, lastName, age);
     }
 
     public void removeUserById(long id) {
-        jdbcTemplate.update(SQL_DELETE_BY_ID, id);
+        try {
+            preparedStatement = connection.prepareStatement(SQL_DELETE_BY_ID);
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        // jdbcTemplate.update(SQL_DELETE_BY_ID, id);
     }
 
     public List<User> getAllUsers() {
-        return jdbcTemplate.query(SQL_SELECT_ALL, userRowMapper);
+        List<User> userList = new ArrayList<>();
+        try {
+            statement = connection.createStatement();
+            this.resultSet = statement.executeQuery(SQL_SELECT_ALL);
+            while (resultSet.next()) {
+                userList.add(new User(resultSet.getLong(1), resultSet.getString(2), resultSet.getString(3), resultSet.getByte(4)));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return userList;
     }
 
     public void cleanUsersTable() {
-        jdbcTemplate.update(SQL_DELETE);
+        try {
+            connection.createStatement().executeUpdate(SQL_DELETE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

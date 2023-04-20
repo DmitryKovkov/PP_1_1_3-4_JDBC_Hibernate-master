@@ -8,7 +8,7 @@ import jm.task.core.jdbc.util.Util;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
-    UserDao userDao = new UserDaoJDBCImpl(Util.connectionMySql());
+    UserDao userDao = new UserDaoJDBCImpl(Util.open());
 
     public void createUsersTable() {
         userDao.createUsersTable();
